@@ -1,8 +1,8 @@
 best_matches = {}
 
-# Iterate through each sheet name
+#Iterate through each sheet name
 for sheet_name in sheet_names:
-    # Initialize variables to store the best match and its similarity score
+    #Initialize variables to store the best match and its similarity score
     best_match = None
     best_score = 0
     
