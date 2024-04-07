@@ -39,3 +39,33 @@ for sheet_name in sheet_names:
 # Print the results
 for sheet_name, match_info in best_matches.items():
     print(f"Sheet name: {sheet_name}, Best match: {match_info['group']}, Highest similarity score: {match_info['score']}")
+
+
+
+******************
+07/04/2024
+
+MNS ID EXTRACTION:
+
+import re
+
+text = 'ADP MNS21-25, MNS 67-69 & 52, MNS 54-58, MNS44-49'
+
+# Extract the range
+mns_values = []
+range_matches = re.findall(r'(?:MNS\s*)?(\d+)-(\d+)|\b(\d+)\b', text)
+
+if range_matches:
+    for match in range_matches:
+        if match[0] and match[1]:  # Range pattern matched
+            start_num = int(match[0])
+            end_num = int(match[1])
+            mns_values.extend([f'MNS{str(i).zfill(7)}' for i in range(start_num, end_num + 1)])
+        elif match[2]:  # Individual number matched
+            single_num = int(match[2])
+            mns_values.append(f'MNS{str(single_num).zfill(7)}')
+
+if mns_values:
+    print(mns_values)
+else:
+    print("No match found.")
