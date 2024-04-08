@@ -69,3 +69,39 @@ if mns_values:
     print(mns_values)
 else:
     print("No match found.")
+
+
+*******************************************************
+08/04/2024
+
+
+import pandas as pd
+
+def process_dataframe(dataframe, date_or_group):
+    # Assuming 'MNS FILTER' and 'CONTRACT OPT EFF DATE' are column names in the DataFrame
+    MNS_FILTER = 'MNS FILTER'
+    CONTRACT_OPT_EFF_DATE = 'CONTRACT OPT EFF DATE'
+    PLAN_ID = 'PLAN ID'
+    
+    # Filtering DataFrame where MNS FILTER is 'MNS'
+    df_filtered = dataframe[dataframe[MNS_FILTER] == 'MNS']
+    
+    # Filtering DataFrame where 'CONTRACT OPT EFF DATE' matches the user given date or group name
+    if isinstance(date_or_group, str):
+        df_filtered = df_filtered[df_filtered[CONTRACT_OPT_EFF_DATE] == date_or_group]
+    elif isinstance(date_or_group, pd.Timestamp):  # If date is provided as pandas Timestamp
+        df_filtered = df_filtered[df_filtered[CONTRACT_OPT_EFF_DATE] == date_or_group.strftime('%Y-%m-%d')]
+    else:
+        raise ValueError("Invalid input type. Please provide either a date (string or Timestamp) or a group name (string).")
+    
+    # Making a list of all elements in the 'PLAN ID' column
+    plan_ids = df_filtered[PLAN_ID].tolist()
+    
+    return plan_ids
+
+# Example usage:
+# Assuming 'path' is your data and 'date_or_group' is either a date string or group name
+# df = pd.DataFrame(path)
+# result = process_dataframe(df, '1998-12-01')  # Example date
+# result = process_dataframe(df, 'Group Name')  # Example group name
+
