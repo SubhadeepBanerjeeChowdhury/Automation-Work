@@ -169,3 +169,29 @@ for c in cnts:
 
 # First inpaint
 img_dst = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
+
+
+********************************
+
+
+# Read the image
+
+gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+# Remove horizontal lines
+thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 81, 17)
+horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (25, 1))
+remove_horizontal = cv2.morphologyEx(thresh, cv2.MORPH_CLOSE, horizontal_kernel, iterations=3)
+
+# Find contours of the horizontal lines
+cnts = cv2.findContours(remove_horizontal, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+cnts = cnts[0] if len(cnts) == 2 else cnts[1]
+mask = np.zeros(gray.shape, np.uint8)
+for c in cnts:
+    cv2.drawContours(mask, [c], -1, (255, 255, 255), 2)
+
+# Dilate the mask to include text areas
+mask = cv2.dilate(mask, np.ones((3, 3), np.uint8), iterations=2)
+
+# Inpaint the image, excluding text areas
+image = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
