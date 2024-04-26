@@ -195,3 +195,42 @@ mask = cv2.dilate(mask, np.ones((3, 3), np.uint8), iterations=2)
 
 # Inpaint the image, excluding text areas
 image = cv2.inpaint(img, mask, 3, cv2.INPAINT_TELEA)
+
+********************************
+
+def modified_cost_share(expression):
+    expression=re.sub('[a-zA-Z]', '', expression)
+    # Define a regex pattern to match currency amounts
+    pattern = r'\$?(\d+(?:,\d+)*(?:\.\d{2})?)'
+
+    # Find all matches in the expression
+    matches = re.findall(pattern, expression)
+
+    # Extract the second value if it exists
+    if len(matches) >= 2:
+        return float(matches[1].replace(',', ''))  # Convert to float and remove commas
+
+    if len(matches) < 2:
+        first_comma_index = expression.find(',')
+        second_comma_index = expression.find(',', first_comma_index + 1)
+
+        if second_comma_index != -1:
+            return expression[second_comma_index- 1:]
+        else:
+            return expression
+        
+
+# Test expressions
+expressions = [
+    "$6,000 $4,000",
+    "$6,000$4,000",
+    "$6,000 4,000",
+    "6000$4000_",
+    "6,000 400000",
+    "6,0005,500"
+]
+
+for expression in expressions:
+    second_value = extract_second_value(expression)
+    print(f"Expression: {expression}, Second Value: {second_value}")
+
