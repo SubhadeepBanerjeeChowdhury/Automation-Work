@@ -234,3 +234,34 @@ for expression in expressions:
     second_value = extract_second_value(expression)
     print(f"Expression: {expression}, Second Value: {second_value}")
 
+
+
+
+********************************************************
+
+
+import numpy as np
+import pandas as pd
+
+data = {'PCP/Specialist OV Copay': [np.nan,'$10/20', np.nan]}
+df = pd.DataFrame(data).astype(str)
+
+# Check each value for '/'
+if df['PCP/Specialist OV Copay'].str.contains('/').any():
+    # Convert the column values to strings
+    df['PCP/Specialist OV Copay'] = df['PCP/Specialist OV Copay'].astype(str)
+
+    # Split the column into two based on '/'
+    df[['PCP COPAY', 'SPEC COPAY']] = df['PCP/Specialist OV Copay'].str.split('/', n=1, expand=True)
+
+
+else:
+    # Duplicate the values in both new columns
+    df['PCP COPAY'] = df['PCP/Specialist OV Copay']
+    df['SPEC COPAY'] = df['PCP/Specialist OV Copay']
+
+# Replace NaNs with np.nan
+df = df.replace({pd.np.nan: np.nan})
+
+# Display the resulting DataFrame
+df
