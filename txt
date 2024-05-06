@@ -265,3 +265,47 @@ df = df.replace({pd.np.nan: np.nan})
 
 # Display the resulting DataFrame
 df
+
+*********************************
+
+06/05/2024
+
+def process_string(input_string):
+    # Check if the pattern '_20(\d{2})_' is present in the input string
+    if re.search(r'_20(\d{2})_', input_string):
+        # Find the substring starting from 'ox' to the end
+        match = re.search(r'ox(.*)', input_string, re.IGNORECASE)
+        if match:
+            result = match.group(0)  # Extract the matched substring including 'ox'
+            uid = re.sub(r'_20\d{2}_', '', result)  # Remove '_20XX_' pattern
+            uid = re.sub(r'\W+', '', uid.lower())
+            uid = re.sub(r'_', '', uid.lower())  # Remove non-alphanumeric characters
+            year_match = re.search(r'_20(\d{2})_', result)  # Extract year part
+            year = '20'+year_match.group(1) if year_match else None
+            return uid, year
+    return input_string, np.nan
+
+# Example DataFram
+# Apply process_string to 'PLAN NAME' column
+audit_df[['UID', 'YEAR']] = audit_df['CIRRUS TRACKING ID'].apply(lambda x: pd.Series(process_string(x)))
+
+# Print the DataFrame
+audit_df
+
+
+
+def mapping_with_active_report(audit_df,tkinter_df):
+    
+    tkinter_df[['UID', 'YEAR']] = pd.DataFrame(tkinter_df['TRACKING ID'].astype(str).apply(process_string).tolist())
+    merged1=pd.merge(tkinter_df,audit_df[['CIRRUS TRACKING ID','CIRRUS MNS ID','UID']],how='left',on='UID')
+    merged2 = pd.merge(tkinter_df,audit_df[['CIRRUS TRACKING ID','CIRRUS MNS ID']], how='left', left_on='MNS ID1', right_on='CIRRUS MNS ID')
+    merged3 = pd.merge(tkinter_df,audit_df[['CIRRUS TRACKING ID','CIRRUS MNS ID']], how='left', left_on='MNS ID2', right_on='CIRRUS MNS ID')
+    df_fin=pd.concat([merged1,merged2,merged3], ignore_index=True)
+    df_fin = df_fin.replace([None, 'nan'], np.nan)
+    df_fin=df_fin.dropna(subset=['CIRRUS TRACKING ID', 'CIRRUS MNS ID'], how='all')
+    df_fin=df_fin.drop_duplicates()
+    df_sorted = df_fin.sort_values(by=['CIRRUS GROUP NAME', 'YEAR'],ascending=[False,False])
+    return df_sorted
+    
+
+
