@@ -144,3 +144,13 @@ deductible_dict = {**key_value_pairs,
 }
 
 print(deductible_dict)
+
+
+
+
+
+
+
+
+*****
+ref_list=[''.join(char.lower() for char in string if char.isalnum() or char.isspace()) for string in cleaned_text]
