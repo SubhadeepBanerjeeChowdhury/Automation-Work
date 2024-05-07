@@ -154,3 +154,20 @@ print(deductible_dict)
 
 *****
 ref_list=[''.join(char.lower() for char in string if char.isalnum() or char.isspace()) for string in cleaned_text]
+
+
+
+word_replacements = {
+    'Single Ded': 'Single Deductible:',
+    'Family Ded': 'Family Deductible:',
+    'Coinsurance': 'Coinsurance:',
+    'Single M.': 'Single M.O.O.P.',
+    'Family M.': 'Family M.O.O.P.'
+}
+
+# Iterate through the list and replace elements if necessary
+for i, element in enumerate(my_list):
+    for word, replacement in word_replacements.items():
+        if word in element:
+            my_list[i] = replacement
+            break 
