@@ -13,3 +13,134 @@ for i in range(0,len(result[0])):
     extracted_text.append(text)
 
 print(extracted_text)
+
+
+*******************************
+
+
+ocr_list=extracted_text
+key_value_pairs={}
+for i in range(len(ocr_list)):
+    # Look for specific keys and extract their corresponding values
+    if ocr_list[i] == 'Group Name:':
+        key_value_pairs['Group Name'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'Eff. Date:':
+        key_value_pairs['Effective Date'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'Network:':
+        key_value_pairs['Network'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'Single Deductible:':
+        key_value_pairs['Single Deductible'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'Family Deductible:':
+        key_value_pairs['Family Deductible'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'PCP:':
+        key_value_pairs['PCP'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'Specialist:':
+        key_value_pairs['Specialist'] = ocr_list[i + 1]
+    elif ocr_list[i] == 'ER Copay:':
+        key_value_pairs['ER Copay:'] = ocr_list[i + 1]
+        
+        
+sd_index = data.index('Single Deductible:')
+single_deductible_inn = {
+    'Single Deductible INN': [data[sd_index + 1], data[sd_index + 2]]
+}
+
+second_sd_index = data.index('Single Deductible:', sd_index + 1)
+single_deductible_oon = {
+    'Single Deductible OON': [data[second_sd_index + 1], data[second_sd_index + 2]]
+}
+
+fd_index = data.index('Family Deductible:')
+family_deductible_inn = {
+    'Family Deductible INN': [data[fd_index + 1], data[fd_index + 2]]
+}
+
+second_fd_index = data.index('Family Deductible:', fd_index + 1)
+family_deductible_oon = {
+    'Family Deductible OON': [data[second_fd_index + 1], data[second_fd_index + 2]]
+}
+coins_index = data.index('Coinsurance:')
+coins_inn = {
+    'Coinsurance INN': [data[coins_index + 1], data[coins_index + 2]]
+}
+
+second_coins_index = data.index('Coinsurance:', coins_index + 1)
+coins_oon = {
+    'Coinsurance OON': [data[second_coins_index + 1], data[second_coins_index + 2]]
+}
+
+# Single M.O.O.P.
+moop_index = data.index('Single M.O.O.P.')
+single_moop_inn = {
+    'Single M.O.O.P. INN': [data[moop_index + 1], data[moop_index + 2]]
+}
+
+second_moop_index = data.index('Single M.O.O.P.', moop_index + 1)
+single_moop_oon = {
+    'Single M.O.O.P. OON': [data[second_moop_index + 1], data[second_moop_index + 2]]
+}
+# Modify values based on conditions for single deductibles
+for key, value in single_deductible_inn.items():
+    if ':' in value[1]:
+        single_deductible_inn[key] = value[0]
+    elif '$' in value[0]:
+        single_deductible_inn[key] = value[1]
+
+for key, value in single_deductible_oon.items():
+    if ':' in value[1]:
+        single_deductible_oon[key] = value[0]
+    elif '$' in value[0]:
+        single_deductible_oon[key] = value[1]
+
+# Modify values based on conditions for family deductibles
+for key, value in family_deductible_inn.items():
+    if ':' in value[1]:
+        family_deductible_inn[key] = value[0]
+    elif '$' in value[0]:
+        family_deductible_inn[key] = value[1]
+
+for key, value in family_deductible_oon.items():
+    if ':' in value[1]:
+        family_deductible_oon[key] = value[0]
+    elif '$' in value[0]:
+        family_deductible_oon[key] = value[1]
+
+
+# Modify values based on conditions for single MOOP
+for key, value in single_moop_inn.items():
+    if ':' in value[1]:
+        single_moop_inn[key] = value[0]
+    elif '$' in value[0]:
+        single_moop_inn[key] = value[1]
+
+for key, value in single_moop_oon.items():
+    if ':' in value[1]:
+        single_moop_oon[key] = value[0]
+    elif '$' in value[0]:
+        single_moop_oon[key] = value[1]
+        
+        
+
+for key, value in coins_inn.items():
+    if ':' in value[1]:
+        coins_inn[key] = value[0]
+    elif '$' in value[0]:
+        coins_inn[key] = value[1]
+
+for key, value in coins_oon.items():
+    if 'Single' in value[1] or 'Coinsurance' in value[1]:
+        coins_oon[key] = value[0]
+    elif '%' in value[0]:
+        coins_oon[key] = value[1]
+deductible_dict = {**key_value_pairs,
+    **single_deductible_inn,
+    **single_deductible_oon,
+    **family_deductible_inn,
+    **family_deductible_oon,
+    **single_moop_inn,
+    **single_moop_oon,
+    **coins_inn,
+    **coins_oon
+}
+
+print(deductible_dict)
