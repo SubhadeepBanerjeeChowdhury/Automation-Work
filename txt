@@ -366,3 +366,33 @@ with pd.ExcelWriter('filtered_excel_file.xlsx') as writer:
     for sheet_name, df in sheets_data.items():
         df.to_excel(writer, sheet_name=sheet_name, index=False)
 
+*************************
+import openpyxl
+from openpyxl.styles import Font
+
+def remove_strikethrough_text(file_path):
+    # Load the workbook and select the active worksheet
+    workbook = openpyxl.load_workbook(file_path)
+    
+    for sheet in workbook.worksheets:
+        for row in sheet.iter_rows():
+            for cell in row:
+                if cell.value is not None:
+                    # Check for strikethrough in cell's font
+                    if isinstance(cell.value, str):
+                        new_value = []
+                        for char_index in range(len(cell.value)):
+                            char = cell.value[char_index]
+                            if not cell.font.strike:
+                                new_value.append(char)
+                        cell.value = ''.join(new_value)
+                    elif cell.font.strike:
+                        cell.value = None
+    
+    # Save the modified workbook
+    workbook.save(file_path)
+
+# Usage
+file_path = 'your_excel_file.xlsx'
+remove_strikethrough_text(file_path)
+
