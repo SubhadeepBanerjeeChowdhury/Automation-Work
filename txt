@@ -7,21 +7,20 @@ def remove_strikethrough_text(file_path):
     
     for sheet in workbook.sheets:
         for cell in sheet.used_range:
-            if cell.value is not None:
-                if isinstance(cell.value, str):
-                    # Create a new string without strikethrough characters
-                    new_value = []
-                    for char_index in range(len(cell.value)):
-                        # Check if the specific character is strikethrough
-                        if not cell.fonts[char_index].strikethrough:
-                            new_value.append(cell.value[char_index])
-                    cell.value = ''.join(new_value)
+            if cell.value is not None and isinstance(cell.value, str):
+                # Access the COM object for the cell
+                cell_com = cell.api
+                new_value = []
+                length = cell_com.Characters.Count
+                
+                for i in range(1, length + 1):
+                    char_com = cell_com.Characters(i, 1)
+                    if not char_com.Font.Strikethrough:
+                        new_value.append(char_com.Text)
+                
+                cell.value = ''.join(new_value)
     
     # Save and close the workbook
     workbook.save(file_path)
     workbook.close()
     app.quit()
-
-# Usage
-file_path = 'your_excel_file.xlsx'
-remove_strikethrough_text(file_path)
