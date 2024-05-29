@@ -309,3 +309,60 @@ def mapping_with_active_report(audit_df,tkinter_df):
     
 
 
+
+
+***************************************************************************************************
+
+
+
+import openpyxl
+import pandas as pd
+
+# Load the workbook
+wb = openpyxl.load_workbook('your_excel_file.xlsx')
+
+# Function to check if a cell has strikethrough
+def has_strikethrough(cell):
+    if cell.font and cell.font.strike:
+        return True
+    return False
+
+# Dictionary to store DataFrames for each sheet
+sheets_data = {}
+
+# Process each sheet in the workbook
+for sheet_name in wb.sheetnames:
+    sheet = wb[sheet_name]
+    
+    # Extract data while omitting strikethrough values
+    data = []
+    for row in sheet.iter_rows(values_only=False):  # Set values_only to False to access cell objects
+        row_data = []
+        for cell in row:
+            if not has_strikethrough(cell):
+                row_data.append(cell.value)
+            else:
+                row_data.append(None)  # or any placeholder you prefer
+        data.append(row_data)
+    
+    # Create DataFrame
+    df = pd.DataFrame(data)
+    
+    # Optionally, remove rows/columns that are fully None
+    df.dropna(how='all', inplace=True)
+    df.dropna(axis=1, how='all', inplace=True)
+    
+    # Store the DataFrame in the dictionary
+    sheets_data[sheet_name] = df
+
+# Display the DataFrames for each sheet
+for sheet_name, df in sheets_data.items():
+    print(f"Sheet name: {sheet_name}")
+    print(df)
+    print("\n")
+
+# Optionally, save each DataFrame to a separate Excel file
+with pd.ExcelWriter('filtered_excel_file.xlsx') as writer:
+    for sheet_name, df in sheets_data.items():
+        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
