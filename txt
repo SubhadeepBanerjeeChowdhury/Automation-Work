@@ -1,20 +1,27 @@
-from openpyxl import load_workbook
+import openpyxl
 
-def remove_strikethrough(filename):
-    wb = load_workbook(filename)
+def remove_strikethrough_effect(file_path):
+    # Load the workbook
+    wb = openpyxl.load_workbook(file_path)
+    
+    # Iterate through each sheet in the workbook
     for sheet in wb.sheetnames:
         ws = wb[sheet]
+        
+        # Iterate through each row in the sheet
         for row in ws.iter_rows():
+            # Iterate through each cell in the row
             for cell in row:
-                if cell.font.strike:
-                    text = cell.value
-                    new_text = ""
-                    for char, font in zip(text, cell.fonts):
-                        if font.strike:
-                            continue
-                        new_text += char
-                    cell.value = new_text
-    wb.save(filename)
+                # Check if the cell contains any text
+                if cell.value and isinstance(cell.value, str):
+                    # Check if the cell has a strikethrough effect
+                    if cell.font.strike:
+                        # Remove the strikethrough text
+                        cell.value = cell.value.replace(cell.value, '')
+    
+    # Save the modified workbook
+    wb.save(file_path)
 
-# Example usage:
-remove_strikethrough('your_excel_file.xlsx')
+# Example usage
+remove_strikethrough_effect('example.xlsx')
+
