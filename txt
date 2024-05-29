@@ -1,26 +1,20 @@
-import xlwings as xw
+from openpyxl import load_workbook
 
-def remove_strikethrough_text(file_path):
-    # Open the workbook
-    app = xw.App(visible=False)
-    workbook = app.books.open(file_path)
-    
-    for sheet in workbook.sheets:
-        for cell in sheet.used_range:
-            if cell.value is not None and isinstance(cell.value, str):
-                # Access the COM object for the cell
-                cell_com = cell.api
-                new_value = []
-                length = cell_com.Characters.Count
-                
-                for i in range(1, length + 1):
-                    char_com = cell_com.Characters(i, 1)
-                    if not char_com.Font.Strikethrough:
-                        new_value.append(char_com.Text)
-                
-                cell.value = ''.join(new_value)
-    
-    # Save and close the workbook
-    workbook.save(file_path)
-    workbook.close()
-    app.quit()
+def remove_strikethrough(filename):
+    wb = load_workbook(filename)
+    for sheet in wb.sheetnames:
+        ws = wb[sheet]
+        for row in ws.iter_rows():
+            for cell in row:
+                if cell.font.strike:
+                    text = cell.value
+                    new_text = ""
+                    for char, font in zip(text, cell.fonts):
+                        if font.strike:
+                            continue
+                        new_text += char
+                    cell.value = new_text
+    wb.save(filename)
+
+# Example usage:
+remove_strikethrough('your_excel_file.xlsx')
