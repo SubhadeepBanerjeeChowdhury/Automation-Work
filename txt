@@ -1,27 +1,12 @@
-import openpyxl
-
-def remove_strikethrough_effect(file_path):
-    # Load the workbook
-    wb = openpyxl.load_workbook(file_path)
+def clean_ded_and_oop(value):
+    # Convert the value to a string
+    value_str = str(value).lower()
     
-    # Iterate through each sheet in the workbook
-    for sheet in wb.sheetnames:
-        ws = wb[sheet]
-        
-        # Iterate through each row in the sheet
-        for row in ws.iter_rows():
-            # Iterate through each cell in the row
-            for cell in row:
-                # Check if the cell contains any text
-                if cell.value and isinstance(cell.value, str):
-                    # Check if the cell has a strikethrough effect
-                    if cell.font.strike:
-                        # Remove the strikethrough text
-                        cell.value = cell.value.replace(cell.value, '')
+    # Find and replace 'd(+)k' with 'd000'
+    value_str = re.sub(r'(\d+)k', lambda m: f"{m.group(1)}000", value_str)
     
-    # Save the modified workbook
-    wb.save(file_path)
-
-# Example usage
-remove_strikethrough_effect('example.xlsx')
-
+    # Remove all non-numeric characters
+    clean_value = re.sub(r'[^0-9]', '', value_str)
+    
+    # Return the cleaned numeric value or '' if the result is empty
+    return int(clean_value) if clean_value else ''
