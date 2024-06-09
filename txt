@@ -14,3 +14,44 @@ column_pairs = [
 # Apply the function to each column pair
 for ind_col, family_col in column_pairs:
     update_family_value(oxford_final, ind_col, family_col)
+
+
+*********************************
+import cv2
+
+# Load the image
+image = cv2.imread(r"C:\Users\Subhadeep\Downloads\Book-2.png")
+
+# Convert the image to grayscale
+gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Apply a threshold to get a binary image
+_, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+
+# Find contours of the text regions
+contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# Initialize variables to store the rightmost and bottommost coordinates
+rightmost = 0
+bottommost = 0
+
+# Loop through all contours to find the rightmost and bottommost coordinates
+for contour in contours:
+    x, y, w, h = cv2.boundingRect(contour)
+    rightmost = max(rightmost, x + w)
+    bottommost = max(bottommost, y + h)
+
+# Add a buffer to the bounding box
+buffer = 10
+x = rightmost + buffer
+y = bottommost + buffer
+
+
+# Crop the image using the calculated bounding box
+cropped_image = image[:y, :x]
+
+
+import matplotlib.pyplot as plt
+plt.imshow(cv2.cvtColor(cropped_image, cv2.COLOR_BGR2RGB))
+plt.axis('off')  # Turn off axis
+plt.show()
