@@ -102,3 +102,67 @@ file_path = r'C:\Users\Subhadeep\Downloads\highlighted_rows.xlsx'
 
 # Execute the highlight_cells function on the DataFrame
 highlight_cells(df, file_path)
+
+
+-----------------------------------------------------------------------------------------------------
+
+import os
+import glob
+
+def find_latest_file(base_path, folder_keywords, file_keywords):
+    # Get the list of folders
+    folders = [f for f in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, f)) and any(keyword in f for keyword in folder_keywords)]
+    
+    if folders:
+        # Sort folders by year in descending order
+        folders.sort(reverse=True)
+        
+        # Iterate over the folders starting from the latest
+        for folder in folders:
+            folder_path = os.path.join(base_path, folder)
+            
+            # Find the latest file matching the keywords
+            search_pattern = os.path.join(folder_path, '*.xlsx')
+            files = [f for f in glob.glob(search_pattern) if all(keyword in os.path.basename(f) for keyword in file_keywords)]
+            
+            if files:
+                # Sort files by modified date in descending order and return the latest one
+                latest_file = max(files, key=os.path.getmtime)
+                return latest_file
+    else:
+        # If no folders found, search in the base path directly
+        search_pattern = os.path.join(base_path, '*.xlsx')
+        files = [f for f in glob.glob(search_pattern) if all(keyword in os.path.basename(f) for keyword in file_keywords)]
+        
+        if files:
+            # Sort files by modified date in descending order and return the latest one
+            latest_file = max(files, key=os.path.getmtime)
+            return latest_file
+
+    return None
+
+
+base_path_adp = r'C:\Users\Subhadeep\Downloads\Configuration Team MNS plans\ADP'
+base_path_prestige = r'C:\Users\Subhadeep\Downloads\Configuration Team MNS plans\Prestige'
+base_sot_folder=r"C:\Users\Subhadeep\Downloads\SOT"
+folder_keywords = [str(year) for year in range(2023, 2035)]
+file_keywords_adp = ['ADP', 'Portfolio']
+file_keywords_prestige = ['Prestige', 'Portfolio']
+file_keywords_ny=['NY','MNS','BARTrack']
+file_keywords_nj=['NJ','MNS','BARTrack']
+file_keywords_ct=['CT','MNS','BARTrack']
+
+
+adp_path = find_latest_file(base_path_adp, folder_keywords, file_keywords_adp)
+prestige_path = find_latest_file(base_path_prestige, folder_keywords, file_keywords_prestige)
+ox_ny_path=find_latest_file(base_sot_folder, folder_keywords, file_keywords_ny)
+ox_nj_path=find_latest_file(base_sot_folder, folder_keywords, file_keywords_nj)
+ox_ct_path=find_latest_file(base_sot_folder, folder_keywords, file_keywords_ct)
+
+print(adp_path)
+print(prestige_path)
+print(ox_ny_path)
+print(ox_ct_path)
+print(ox_nj_path)
+
+
