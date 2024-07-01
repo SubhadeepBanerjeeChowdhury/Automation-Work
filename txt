@@ -166,3 +166,34 @@ print(ox_ct_path)
 print(ox_nj_path)
 
 
+
+**************************************************************************************
+
+
+# Function to set ID Card Template based on conditions
+def set_id_card_template(row):
+    try:
+        if 'NJ' in row['TRACKING ID'] or 'NJ' in row['sheetname'] or 'NJ' in row['filename']:
+            if row['FUNDING TYPE'] == 'Fully Insured':
+                return 'OXFN4'
+        if 'NY' in row['TRACKING ID'] or 'NY' in row['sheetname'] or 'NY' in row['filename']:
+            if row['FUNDING TYPE'] == 'Fully Insured':
+                if all(x in [0, '0', ''] for x in [row['PCP TIER COPAY'], row['SPEC TIER COPAY']]):
+                    return 'UHC02'
+                elif all(x not in [0, '0', ''] for x in [row['PCP TIER COPAY'], row['SPEC TIER COPAY']]):
+                    return 'UHC01'
+        if 'CT' in row['TRACKING ID'] or 'CT' in row['sheetname'] or 'CT' in row['filename']:
+            if 'Ded' in row['PCP COPAY'] or 'Ded' in row['SPEC COPAY']:
+                return 'OXFN5'
+            try:
+                if (int(row['PCP COPAY']) > 0) or (int(row['SPEC COPAY']) > 0):
+                    return 'OXFN1'
+            except ValueError:
+                pass
+    except Exception as e:
+        print(f"Error processing row: {e}")
+    return ''
+
+# Apply the function to the DataFrame
+tkinter_df['ID Card Template'] = tkinter_df.apply(set_id_card_template, axis=1)
+
