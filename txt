@@ -229,3 +229,56 @@ if os.path.exists(os.path.join(cwd, "Output", folder_date)):
 audit_dict = {mns_id: 'Audited' if any(mns_id in sheet for sheet in output_sheets) else 'Not Audited' for mns_id in mnstuple}
 audit_dict
 
+*******************************************************************************************************************************************************
+
+
+import os
+import pandas as pd
+data={'MNS ID':['MNS0400013','MNS0400013','MNS0400016','MNS0400016','MNS0400009','MNS0400010','MNS0400000'],'GROUP NAME':['RAFTERONE','RAFTERONE','HOME HOSPICE','HOME HOSPICE','HOME HOSPICE','AIR GENERAL','AIR GENERAL'],'Option':['1','2','1','2','1','1','1']}
+tufts_df=pd.DataFrame(data)
+#Predefined inputs
+
+bob = 'UHC FREEDOM'
+date = '07/01/2023'
+
+
+def get_audit_status(row):
+    folder_date = date.replace('/', '_')
+    cwd = os.getcwd()
+    bob_folder = os.path.join(cwd, "Output", folder_date, bob)
+
+    # List to store the sheet names
+    output_sheets = []
+
+    # Check if the date folder exists
+    if os.path.exists(os.path.join(cwd, "Output", folder_date)):
+        # Check if the BoB folder exists inside the date folder
+        if os.path.exists(bob_folder):
+            # Iterate over all files in the BoB folder
+            for file_name in os.listdir(bob_folder):
+                if file_name.endswith(".xlsx") or file_name.endswith(".xls"):
+                    file_path = os.path.join(bob_folder, file_name)
+                    xls = pd.ExcelFile(file_path)
+                    for i in xls.sheet_names:
+                        output_sheets.append(i)
+    if row['Option']:
+        if str(row['MNS ID']+'_'+row['Option']) in str(output_sheets):
+            return 'Audited'
+        else:
+            return 'Not Audited'
+    else:
+        if row['MNS ID'] in str(output_sheets):
+            return 'Audited'
+        else:
+            return 'Not Audited'
+    
+tufts_df['Audit Status']=tufts_df.apply(get_audit_status,axis=1)
+if 'Audited' in str(tufts_df['Audit Status'].to_list()):
+    message_2='You have already audited '+ str(len(tufts_df[tufts_df['Audit Status']=='Audited']['MNS ID'].to_list()))+' out of '+str(len(tufts_df['MNS ID'].to_list()))+ ' plans.\nDo you want to restart the audit or skip the audited plans?'
+    print(message_2)
+    user_input=str(input('Restart/Skip?:'))
+    if user_input=='Skip':
+        filtered_df=tufts_df[tufts_df['Audit Status']=='Not Audited']
+        print(filtered_df)
+    else:
+        print(tufts_df)
