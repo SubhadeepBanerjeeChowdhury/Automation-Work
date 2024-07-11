@@ -398,3 +398,12 @@ def move_to_archive(origin, destination, omit_list):
 
                 shutil.move(full_path, dest_path)
                 print(f"Moved: {full_path} to {dest_path}")
+
+
+
+
+
+def check_date_format(date):
+    # Regular expression to match mm/dd/yyyy format
+    pattern = re.compile(r'^(0[1-9]|1[0-2])/([0-2][0-9]|3[01])/\d{4}$')
+    return bool(pattern.match(date))
