@@ -313,3 +313,40 @@ keyword_list = ['keyword1', 'keyword2']
 matching_files = find_files_with_keywords(folder_path, keyword_list)
 for file_path in matching_files:
     print(file_path)
+
+
+
+def move_to_archive(origin, destination, omit_list):
+    """
+    Moves all files and folders from the origin to the destination,
+    excluding the file/folder paths in the omit_list.
+    
+    Parameters:
+    origin (str): The path to the origin folder.
+    destination (str): The path to the destination folder.
+    omit_list (list): A list of file/folder paths to omit from moving.
+    """
+    # Ensure the destination directory exists
+    os.makedirs(destination, exist_ok=True)
+
+    # Normalize the omit_list paths
+    omit_list = [os.path.normpath(path) for path in omit_list]
+
+    # Iterate over all files and directories in the origin directory
+    for root, dirs, files in os.walk(origin, topdown=False):
+        for name in files + dirs:
+            # Construct the full path
+            full_path = os.path.join(root, name)
+            
+            # Check if the full path is not in the omit list
+            if full_path not in omit_list:
+                # Construct the destination path
+                relative_path = os.path.relpath(full_path, origin)
+                dest_path = os.path.join(destination, relative_path)
+                
+                # Ensure the destination directory exists
+                os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
+                # Move the file or directory
+                shutil.move(full_path, dest_path)
+                print(f"Moved: {full_path} to {dest_path}")
