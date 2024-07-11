@@ -371,22 +371,17 @@ def move_to_archive(origin, destination, omit_list):
     # Normalize the omit_list paths
     omit_list = [os.path.normpath(path) for path in omit_list]
 
-    # Function to check if a path is in the omit list or its parent directory is
-    def is_in_omit_list(path):
-        normalized_path = os.path.normpath(path)
-        for omit_path in omit_list:
-            if normalized_path == omit_path or normalized_path.startswith(omit_path + os.sep):
-                return True
-        return False
-
     # Iterate over all files and directories in the origin directory
-    for root, dirs, files in os.walk(origin, topdown=False):
+    for root, dirs, files in os.walk(origin, topdown=True):
+        # Skip directories in omit_list
+        dirs[:] = [d for d in dirs if os.path.normpath(os.path.join(root, d)) not in omit_list]
+
         for name in files + dirs:
             # Construct the full path
             full_path = os.path.join(root, name)
             
-            # Check if the full path or its parent directory is not in the omit list
-            if not is_in_omit_list(full_path):
+            # Check if the full path is not in the omit list
+            if full_path not in omit_list:
                 # Construct the destination path
                 relative_path = os.path.relpath(full_path, origin)
                 dest_path = os.path.join(destination, relative_path)
@@ -395,5 +390,11 @@ def move_to_archive(origin, destination, omit_list):
                 os.makedirs(os.path.dirname(dest_path), exist_ok=True)
 
                 # Move the file or directory
+                if os.path.exists(dest_path):
+                    if os.path.isdir(dest_path):
+                        shutil.rmtree(dest_path)
+                    else:
+                        os.remove(dest_path)
+
                 shutil.move(full_path, dest_path)
                 print(f"Moved: {full_path} to {dest_path}")
