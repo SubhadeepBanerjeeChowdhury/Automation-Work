@@ -282,3 +282,34 @@ if 'Audited' in str(tufts_df['Audit Status'].to_list()):
         print(filtered_df)
     else:
         print(tufts_df)
+
+
+import os
+
+def find_files_with_keywords(folder_path, keyword_list):
+    """
+    Finds files in the given folder where the filenames contain all the keywords.
+    
+    Parameters:
+    folder_path (str): The path to the folder to search.
+    keyword_list (list): A list of keywords to look for in the filenames.
+    
+    Returns:
+    list: A list of file paths that match the criteria.
+    """
+    matching_files = []
+    
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            if all(keyword in file for keyword in keyword_list):
+                matching_files.append(os.path.join(root, file))
+    
+    return matching_files
+
+# Example usage
+folder_path = '/path/to/your/folder'
+keyword_list = ['keyword1', 'keyword2']
+
+matching_files = find_files_with_keywords(folder_path, keyword_list)
+for file_path in matching_files:
+    print(file_path)
