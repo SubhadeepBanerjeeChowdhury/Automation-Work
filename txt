@@ -407,3 +407,38 @@ def check_date_format(date):
     # Regular expression to match mm/dd/yyyy format
     pattern = re.compile(r'^(0[1-9]|1[0-2])/([0-2][0-9]|3[01])/\d{4}$')
     return bool(pattern.match(date))
+
+
+def get_sheetnames_from_folder(folder_path):
+    sheetnames = []
+    for root, _, files in os.walk(folder_path):
+        for file in files:
+            if file.endswith('.xlsx'):
+                file_path = os.path.join(root, file)
+                workbook = load_workbook(file_path, read_only=True)
+                sheetnames.extend(workbook.sheetnames)
+                workbook.close()
+    return sheetnames
+
+def remove_duplicate_sheets(discard_folder, output_folder):
+    discard_sheets = get_sheetnames_from_folder(discard_folder)
+    output_sheets = get_sheetnames_from_folder(output_folder)
+
+    for root, _, files in os.walk(output_folder):
+        for file in files:
+            if file.endswith('.xlsx'):
+                file_path = os.path.join(root, file)
+                workbook = load_workbook(file_path)
+                for sheetname in workbook.sheetnames:
+                    if sheetname in discard_sheets:
+                        del workbook[sheetname]
+                workbook.save(file_path)
+                workbook.close()
+    
+    return discard_sheets, output_sheets
+
+# Example usage:
+discard_folder =r"C:\Users\Subhadeep\Downloads\UHC Project\Output\Discarded Plans"
+output_folder = r"C:\Users\Subhadeep\Downloads\UHC Project\Output\07_01_2023"
+
+discard_sheets, output_sheets = remove_duplicate_sheets(discard_folder, output_folder)
