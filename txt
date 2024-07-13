@@ -442,3 +442,20 @@ discard_folder =r"C:\Users\Subhadeep\Downloads\UHC Project\Output\Discarded Plan
 output_folder = r"C:\Users\Subhadeep\Downloads\UHC Project\Output\07_01_2023"
 
 discard_sheets, output_sheets = remove_duplicate_sheets(discard_folder, output_folder)
+
+def delete_all_files(folder_path):
+    for root, dirs, files in os.walk(folder_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            try:
+                os.remove(file_path)
+                print(f"Deleted file: {file_path}")
+            except Exception as e:
+                print(f"Error deleting file {file_path}: {e}")
+        for dir in dirs:
+            dir_path = os.path.join(root, dir)
+            try:
+                shutil.rmtree(dir_path)
+                print(f"Deleted directory and its contents: {dir_path}")
+            except Exception as e:
+                print(f"Error deleting directory {dir_path}: {e}")
