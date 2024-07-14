@@ -529,3 +529,68 @@ def download_file(file_url, username, password, local_path):
 
 # Call the function to start downloading files
 download_sharepoint_files(SHAREPOINT_URL, USERNAME, PASSWORD, LOCAL_PATH_TO_SAVE)
+
+
+import requests
+import os
+from requests.auth import HTTPBasicAuth  # Assuming basic authentication
+
+# SharePoint URL where the files are located
+SHAREPOINT_URL = 'https://your-sharepoint-site.com/sites/your-site/Shared%20Documents/Your%20Library/'
+
+# Your SharePoint username and password
+USERNAME = 'your_username'
+PASSWORD = 'your_password'
+
+# Local directory path to save the downloaded files
+LOCAL_PATH_TO_SAVE = '/path/to/local/directory/'
+
+# Function to download files from SharePoint
+def download_sharepoint_files(url, username, password, local_path):
+    try:
+        # Send GET request to SharePoint with basic authentication
+        response = requests.get(url, auth=HTTPBasicAuth(username, password), stream=True)
+
+        # Check if request was successful
+        if response.status_code == 200:
+            # Iterate through each file in the directory
+            for file_name in response.json()['value']:
+                # Construct the full URL of each file
+                file_url = os.path.join(url, file_name['Name'])
+
+                # Download each file
+                download_file(file_url, username, password, local_path)
+
+            print("All files downloaded successfully.")
+        else:
+            print(f"Failed to retrieve file list. Status code: {response.status_code}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+
+# Function to download a file
+def download_file(file_url, username, password, local_path):
+    try:
+        # Send GET request to download file with basic authentication
+        response = requests.get(file_url, auth=HTTPBasicAuth(username, password), stream=True)
+
+        # Check if request was successful
+        if response.status_code == 200:
+            # Extract filename from URL
+            file_name = os.path.basename(file_url)
+
+            # Save file to local directory
+            with open(os.path.join(local_path, file_name), 'wb') as f:
+                for chunk in response.iter_content(chunk_size=8192):
+                    f.write(chunk)
+
+            print(f"File '{file_name}' downloaded successfully.")
+        else:
+            print(f"Failed to download file '{file_url}'. Status code: {response.status_code}")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error downloading file '{file_url}': {e}")
+
+# Call the function to start downloading files
+download_sharepoint_files(SHAREPOINT_URL, USERNAME, PASSWORD, LOCAL_PATH_TO_SAVE)
+
