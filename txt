@@ -594,3 +594,40 @@ def download_file(file_url, username, password, local_path):
 # Call the function to start downloading files
 download_sharepoint_files(SHAREPOINT_URL, USERNAME, PASSWORD, LOCAL_PATH_TO_SAVE)
 
+
+
+from sharepy import connect
+
+# SharePoint URL where the file is located
+SHAREPOINT_URL = 'https://your-sharepoint-site.com/sites/your-site/'
+
+# Your SharePoint username and password
+USERNAME = 'your_username'
+PASSWORD = 'your_password'
+
+# Local directory path to save the downloaded file
+LOCAL_PATH_TO_SAVE = '/path/to/local/directory/'
+
+# Function to download a file from SharePoint
+def download_sharepoint_file(url, username, password, local_path):
+    try:
+        # Connect to SharePoint
+        s = connect(url, username, password)
+
+        # Download file
+        response = s.getfile(url, filename=os.path.join(local_path, os.path.basename(url)))
+
+        if response.status_code == 200:
+            print(f"File '{os.path.basename(url)}' downloaded successfully.")
+        else:
+            print(f"Failed to download file '{url}'. Status code: {response.status_code}")
+
+    except Exception as e:
+        print(f"Error downloading file '{url}': {e}")
+
+# Construct the full URL of the file to download
+file_url = 'https://your-sharepoint-site.com/sites/your-site/Shared%20Documents/Your%20Library/example.xlsx'
+
+# Call the function to download the file
+download_sharepoint_file(file_url, USERNAME, PASSWORD, LOCAL_PATH_TO_SAVE)
+
