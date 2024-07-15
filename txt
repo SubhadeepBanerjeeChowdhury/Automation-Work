@@ -631,3 +631,45 @@ file_url = 'https://your-sharepoint-site.com/sites/your-site/Shared%20Documents/
 # Call the function to download the file
 download_sharepoint_file(file_url, USERNAME, PASSWORD, LOCAL_PATH_TO_SAVE)
 
+
+
+
+from office365.runtime.auth.authentication_context import AuthenticationContext
+from office365.sharepoint.client_context import ClientContext
+from office365.sharepoint.files.file import File
+
+# Replace with your SharePoint site and file details
+sharepoint_site = 'https://yoursharepointsite.sharepoint.com/sites/yoursite'
+file_url = '/sites/yoursite/Shared%20Documents/yourfile.txt'
+username = 'yourusername'
+password = 'yourpassword'
+
+ctx_auth = AuthenticationContext(sharepoint_site)
+if ctx_auth.acquire_token_for_user(username, password):
+    ctx = ClientContext(sharepoint_site, ctx_auth)
+    response = File.open_binary(ctx, file_url)
+    with open('downloaded_file.txt', 'wb') as file:
+        file.write(response.content)
+    print('File downloaded successfully')
+else:
+    print(ctx_auth.get_last_error())
+
+import requests
+from requests.auth import HTTPBasicAuth
+
+# Replace with your SharePoint site and file details
+sharepoint_site = 'https://yoursharepointsite.sharepoint.com'
+file_url = '/sites/yoursite/Shared%20Documents/yourfile.txt'
+username = 'yourusername'
+password = 'yourpassword'
+
+full_url = f'{sharepoint_site}{file_url}'
+
+response = requests.get(full_url, auth=HTTPBasicAuth(username, password))
+
+if response.status_code == 200:
+    with open('downloaded_file.txt', 'wb') as file:
+        file.write(response.content)
+    print('File downloaded successfully')
+else:
+    print(f'Failed to download file. Status code: {response.status_code}')
