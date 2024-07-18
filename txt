@@ -673,3 +673,149 @@ if response.status_code == 200:
     print('File downloaded successfully')
 else:
     print(f'Failed to download file. Status code: {response.status_code}')
+
+
+
+
+***********************************
+
+
+import customtkinter as ctk
+from tkinter import messagebox, ttk, StringVar, IntVar
+import pandas as pd
+
+# Initialize CustomTkinter
+ctk.set_appearance_mode("dark")  # Modes: system (default), light, dark
+ctk.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
+
+# Sample DataFrames with 30 fields
+columns = [f'Field {i}' for i in range(1, 31)]
+data1 = {col: [f'{col} - Plan {i}' for i in range(1, 5)] for col in columns}
+cirrus_data = {col: [f'{col} - Plan {i+4}' for i in range(1, 5)] for col in columns}
+
+df1 = pd.DataFrame(data1)
+cirrus_df = pd.DataFrame(cirrus_data)
+index = 0
+
+def display_row():
+    global index, df1, cirrus_df
+    if df1.empty:
+        for col in df1.columns:
+            df1_vars[col].set("")
+            cirrus_df_vars[col].set("")
+            match_vars[col].set(0)
+        group_counter.set("Group: N/A")
+        plan_counter.set("Plan: N/A")
+    else:
+        if index < 0:
+            index = 0
+        elif index >= len(df1):
+            index = len(df1) - 1
+        row1 = df1.iloc[index]
+        row2 = cirrus_df.iloc[index]
+        for col in df1.columns:
+            df1_vars[col].set(row1[col])
+            cirrus_df_vars[col].set(row2[col])
+            match_vars[col].set(1 if row1[col] == row2[col] else 0)
+        
+        group_name = row1['Field 2']
+        group_plans = df1[df1['Field 2'] == group_name]
+        group_index = group_plans.index.get_loc(index) + 1
+        group_counter.set(f"Group: {group_name}")
+        plan_counter.set(f"Plan: {group_index}/{len(group_plans)}")
+        group_dropdown.set(group_name)
+
+def next_row():
+    global index
+    if index < len(df1) - 1:
+        index += 1
+        display_row()
+    else:
+        messagebox.showinfo("End", "This is the last plan.")
+
+def prev_row():
+    global index
+    if index > 0:
+        index -= 1
+        display_row()
+    else:
+        messagebox.showinfo("Start", "This is the first plan.")
+
+def discard_plan():
+    global index, df1, cirrus_df
+    if not df1.empty:
+        df1 = df1.drop(df1.index[index]).reset_index(drop=True)
+        cirrus_df = cirrus_df.drop(cirrus_df.index[index]).reset_index(drop=True)
+        if index >= len(df1):
+            index = len(df1) - 1
+        display_row()
+    else:
+        messagebox.showinfo("Empty", "No plans to discard.")
+
+def discard_group():
+    global index, df1, cirrus_df
+    if not df1.empty:
+        group_name = df1.iloc[index]['Field 2']
+        df1 = df1[df1['Field 2'] != group_name].reset_index(drop=True)
+        cirrus_df = cirrus_df[cirrus_df['Field 2'] != group_name].reset_index(drop=True)
+        index = 0
+        display_row()
+        update_group_dropdown()
+    else:
+        messagebox.showinfo("Empty", "No groups to discard.")
+
+def update_group_dropdown():
+    global group_names
+    group_names = df1['Field 2'].unique().tolist()
+    group_dropdown['values'] = group_names
+    if group_names:
+        group_dropdown.set(group_names[0])
+    else:
+        group_dropdown.set('')
+
+def group_selected(event):
+    global index, df1
+    selected_group = group_dropdown.get()
+    if selected_group in df1['Field 2'].values:
+        index = df1[df1['Field 2'] == selected_group].index[0]
+        display_row()
+
+# Tkinter setup
+root = ctk.CTk()
+root.title("Plan Viewer")
+root.attributes('-fullscreen', True)
+
+df1_vars = {col: StringVar() for col in columns}
+cirrus_df_vars = {col: StringVar() for col in columns}
+match_vars = {col: IntVar() for col in columns}
+
+group_counter = StringVar()
+plan_counter = StringVar()
+
+row = 0
+for col in columns:
+    ctk.CTkLabel(root, text=col).grid(row=row, column=0)
+    ctk.CTkEntry(root, textvariable=df1_vars[col], state='readonly').grid(row=row, column=1)
+    ctk.CTkEntry(root, textvariable=cirrus_df_vars[col], state='readonly').grid(row=row, column=2)
+    ctk.CTkRadioButton(root, text="Yes", variable=match_vars[col], value=1).grid(row=row, column=3)
+    ctk.CTkRadioButton(root, text="No", variable=match_vars[col], value=0).grid(row=row, column=4)
+    row += 1
+
+ctk.CTkLabel(root, textvariable=group_counter).grid(row=row, column=0)
+ctk.CTkLabel(root, textvariable=plan_counter).grid(row=row, column=1)
+
+group_names = df1['Field 2'].unique().tolist()
+group_dropdown = ttk.Combobox(root, values=group_names)
+group_dropdown.grid(row=row + 1, column=0, columnspan=3)
+group_dropdown.bind("<<ComboboxSelected>>", group_selected)
+if group_names:
+    group_dropdown.set(group_names[0])
+
+ctk.CTkButton(root, text="Previous", command=prev_row).grid(row=row+2, column=0)
+ctk.CTkButton(root, text="Next", command=next_row).grid(row=row+2, column=1)
+ctk.CTkButton(root, text="Discard Plan", command=discard_plan).grid(row=row+3, column=0)
+ctk.CTkButton(root, text="Discard Group", command=discard_group).grid(row=row+3, column=1)
+
+display_row()
+root.mainloop()
+
