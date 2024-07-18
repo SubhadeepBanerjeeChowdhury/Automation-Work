@@ -819,3 +819,158 @@ ctk.CTkButton(root, text="Discard Group", command=discard_group).grid(row=row+3,
 display_row()
 root.mainloop()
 
+
+
+import tkinter as tk
+from tkinter import messagebox, ttk
+import pandas as pd
+
+# Sample DataFrames
+data1 = {
+    'MNS ID': [1, 2, 3, 4],
+    'GROUP NAME': ['A', 'A', 'B', 'B'],
+    'COPAY': [10, 20, 30, 40],
+    'COINSURANCE': [5, 10, 15, 20],
+    'DEDUCTIBLE': [100, 200, 300, 400]
+}
+cirrus_data = {
+    'MNS ID': [1, 2, 3, 4],
+    'GROUP NAME': ['A', 'A', 'B', 'B'],
+    'COPAY': [15, 25, 35, 45],
+    'COINSURANCE': [6, 12, 18, 24],
+    'DEDUCTIBLE': [110, 210, 310, 410]
+}
+
+df1 = pd.DataFrame(data1)
+cirrus_df = pd.DataFrame(cirrus_data)
+index = 0
+
+def display_row():
+    global index, df1, cirrus_df
+    if df1.empty:
+        for col in df1.columns:
+            df1_vars[col].set("")
+            cirrus_df_vars[col].set("")
+        group_counter.set("Group: N/A")
+        plan_counter.set("Plan: N/A")
+    else:
+        if index < 0:
+            index = 0
+        elif index >= len(df1):
+            index = len(df1) - 1
+        row1 = df1.iloc[index]
+        row2 = cirrus_df.iloc[index]
+        for col in df1.columns:
+            df1_vars[col].set(row1[col])
+            cirrus_df_vars[col].set(row2[col])
+        
+        group_name = row1['GROUP NAME']
+        group_plans = df1[df1['GROUP NAME'] == group_name]
+        group_index = group_plans.index.get_loc(index) + 1
+        group_counter.set(f"Group: {group_name}")
+        plan_counter.set(f"Plan: {group_index}/{len(group_plans)}")
+        group_dropdown.set(group_name)
+
+def next_row():
+    global index
+    if index < len(df1) - 1:
+        index += 1
+        display_row()
+    else:
+        messagebox.showinfo("End", "This is the last plan.")
+
+def prev_row():
+    global index
+    if index > 0:
+        index -= 1
+        display_row()
+    else:
+        messagebox.showinfo("Start", "This is the first plan.")
+
+def discard_plan():
+    global index, df1, cirrus_df
+    if not df1.empty:
+        df1 = df1.drop(df1.index[index]).reset_index(drop=True)
+        cirrus_df = cirrus_df.drop(cirrus_df.index[index]).reset_index(drop=True)
+        if index >= len(df1):
+            index = len(df1) - 1
+        display_row()
+    else:
+        messagebox.showinfo("Empty", "No plans to discard.")
+
+def discard_group():
+    global index, df1, cirrus_df
+    if not df1.empty:
+        group_name = df1.iloc[index]['GROUP NAME']
+        df1 = df1[df1['GROUP NAME'] != group_name].reset_index(drop=True)
+        cirrus_df = cirrus_df[cirrus_df['GROUP NAME'] != group_name].reset_index(drop=True)
+        index = 0
+        display_row()
+        update_group_dropdown()
+    else:
+        messagebox.showinfo("Empty", "No groups to discard.")
+
+def update_group_dropdown():
+    global group_names
+    group_names = df1['GROUP NAME'].unique().tolist()
+    
+    group_dropdown['values'] = group_names
+    if group_names:
+        group_dropdown.set(group_names[0])
+    else:
+        group_dropdown.set('')
+
+def group_selected(event):
+    global index, df1
+    selected_group = group_dropdown.get()
+    if selected_group in df1['GROUP NAME'].values:
+        index = df1[df1['GROUP NAME'] == selected_group].index[0]
+        display_row()
+
+# Tkinter setup
+root = tk.Tk()
+root.title("Plan Viewer")
+
+df1_vars = {
+    'MNS ID': tk.StringVar(),
+    'GROUP NAME': tk.StringVar(),
+    'COPAY': tk.StringVar(),
+    'COINSURANCE': tk.StringVar(),
+    'DEDUCTIBLE': tk.StringVar()
+}
+
+cirrus_df_vars = {
+    'MNS ID': tk.StringVar(),
+    'GROUP NAME': tk.StringVar(),
+    'COPAY': tk.StringVar(),
+    'COINSURANCE': tk.StringVar(),
+    'DEDUCTIBLE': tk.StringVar()
+}
+
+group_counter = tk.StringVar()
+plan_counter = tk.StringVar()
+
+row = 0
+for col in df1.columns:
+    tk.Label(root, text=col).grid(row=row, column=0)
+    tk.Entry(root, textvariable=df1_vars[col], state='readonly').grid(row=row, column=1)
+    tk.Entry(root, textvariable=cirrus_df_vars[col], state='readonly').grid(row=row, column=2)
+    row += 1
+
+tk.Label(root, textvariable=group_counter).grid(row=row, column=0)
+tk.Label(root, textvariable=plan_counter).grid(row=row, column=1)
+
+group_names = df1['GROUP NAME'].unique().tolist()
+group_dropdown = ttk.Combobox(root, values=group_names)
+group_dropdown.grid(row=row + 1, column=0, columnspan=3)
+group_dropdown.bind("<<ComboboxSelected>>", group_selected)
+if group_names:
+    group_dropdown.set(group_names[0])
+
+tk.Button(root, text="Previous", command=prev_row).grid(row=row+2, column=0)
+tk.Button(root, text="Next", command=next_row).grid(row=row+2, column=1)
+tk.Button(root, text="Discard Plan", command=discard_plan).grid(row=row+3, column=0)
+tk.Button(root, text="Discard Group", command=discard_group).grid(row=row+3, column=1)
+
+display_row()
+root.mainloop()
