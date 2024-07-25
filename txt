@@ -974,3 +974,26 @@ tk.Button(root, text="Discard Group", command=discard_group).grid(row=row+3, col
 
 display_row()
 root.mainloop()
+
+import os
+
+def find_adp_folder(root_directory):
+    adp_paths = []
+    for dirpath, dirnames, filenames in os.walk(root_directory):
+        if 'Configuration Team MNS Plans' in dirpath:
+            for dirname in dirnames:
+                if dirname == 'ADP':
+                    full_path = os.path.join(dirpath, dirname)
+                    adp_paths.append(full_path)
+    return adp_paths
+
+# Specify the root directory (Z drive)
+root_directory = 'Z:/'
+
+# Find all ADP folder paths
+adp_folder_paths = find_adp_folder(root_directory)
+
+# Print the found paths
+for path in adp_folder_paths:
+    print(path)
+
